@@ -24,8 +24,8 @@
       <div class="panel-intro"><span>CREATE</span><strong>今天想画点什么？</strong><p>选择创作方式，把脑海里的画面交给 AI。</p></div>
       <div class="mode-tabs"><button class="mode-tab active" data-mode="generate">文生图</button><button class="mode-tab" data-mode="edit">图生图</button></div>
       <section id="editInputs" class="edit-inputs" hidden>
-        <label class="upload-box"><input id="sourceInput" type="file" accept="image/png,image/jpeg,image/webp"><b>上传原图</b><span id="sourceName">PNG、JPG、WEBP，最大 25MB</span></label>
-        <label class="upload-box subtle"><input id="maskInput" type="file" accept="image/png"><b>上传蒙版，可选</b><span id="maskName">透明 PNG，白色区域进行修改</span></label>
+        <label class="upload-box"><input id="sourceInput" type="file" accept="image/png,image/jpeg,image/webp"><b>上传原图</b><span id="sourceName">PNG、JPG、WEBP，最大 25MB</span><button id="clearSource" class="clear-upload" type="button" hidden aria-label="取消上传的原图">×</button></label>
+        <label class="upload-box subtle"><input id="maskInput" type="file" accept="image/png"><b>上传蒙版，可选</b><span id="maskName">透明 PNG，白色区域进行修改</span><button id="clearMask" class="clear-upload" type="button" hidden aria-label="取消上传的蒙版">×</button></label>
       </section>
       <label class="field prompt-field"><span>图片描述</span><textarea id="prompt" placeholder="描述画面主体、风格、构图、光线与细节……"></textarea></label>
       <div class="field"><span>模型</span><div class="model-row"><select id="modelSelect"><option value="">请先在设置中获取模型</option></select><button id="refreshModels" class="icon-button" title="重新获取模型" type="button">↻</button></div></div>
@@ -38,7 +38,7 @@
       <button id="generate" class="button primary generate-button"><span>生成图片</span><small id="generateHint">优先使用 URL 返回</small></button>
     </aside>
     <section class="canvas-panel">
-      <div class="canvas-head"><div><strong>创作画布</strong><span id="resultMeta">等待生成</span></div><div id="canvasActions" class="canvas-actions" hidden><button id="reuse" class="button secondary">用作图生图</button><a id="download" class="button secondary" download>下载</a></div></div>
+      <div class="canvas-head"><div><strong>创作画布</strong><span id="resultMeta">等待生成</span></div><div id="canvasActions" class="canvas-actions" hidden><button id="reuse" class="button secondary">用作图生图</button><a id="download" class="button secondary" download>下载</a><button id="closeCanvas" class="button secondary close-canvas" type="button" aria-label="关闭画布上的图片">关闭</button></div></div>
       <div id="canvas" class="canvas"><div class="empty-state"><img src="./icon.png" alt=""><span>READY TO CREATE</span><strong>灵感画布准备好了</strong><p>输入描述，第一张作品会从这里出现</p></div><img id="resultImage" alt="生成结果"></div>
     </section>
     <aside class="history-panel">

@@ -11,6 +11,7 @@ const dataUrlFromBlob=blob=>new Promise((resolve,reject)=>{const reader=new File
 const db=()=>new Promise((resolve,reject)=>{const request=indexedDB.open("krill-image-studio",1);request.onupgradeneeded=()=>request.result.createObjectStore("images");request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error)});
 async function putImage(id,data){const database=await db();await new Promise((resolve,reject)=>{const tx=database.transaction("images","readwrite");tx.objectStore("images").put(data,id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});database.close()}
 async function getImage(id){const database=await db();const result=await new Promise((resolve,reject)=>{const tx=database.transaction("images","readonly");const request=tx.objectStore("images").get(id);request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error)});database.close();if(!result)throw new Error("本地图片记录已不存在");return result}
+async function deleteImage(id){const database=await db();await new Promise((resolve,reject)=>{const tx=database.transaction("images","readwrite");tx.objectStore("images").delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});database.close()}
 const b64ToDataUrl=(b64,mime="image/png")=>`data:${mime};base64,${b64}`;
 async function resolveImage(value,base,key){
   for(let i=0;i<225;i++){
@@ -32,6 +33,7 @@ async function browserInvoke(cmd,args={}){
   if(cmd==="save_selected_model"){saveBrowserSettings({...s,selectedModel:args.model});return}
   if(cmd==="get_history")return JSON.parse(localStorage.getItem(HISTORY_KEY)||"[]");
   if(cmd==="read_image")return getImage(args.path);
+  if(cmd==="delete_history_item"){const history=JSON.parse(localStorage.getItem(HISTORY_KEY)||"[]");const item=history.find(x=>x.id===args.id);localStorage.setItem(HISTORY_KEY,JSON.stringify(history.filter(x=>x.id!==args.id)));if(item)await deleteImage(item.path);return}
   if(cmd==="generate_image"||cmd==="edit_image"){
     const input=args.input,key=s.apiKey;if(!key)throw new Error("请先填写 API Key 并获取模型");const started=performance.now();let endpoint,options;
     if(cmd==="generate_image"){endpoint=`${s.baseUrl}/images/generations`;options={method:"POST",headers:{...authHeaders(key),"Content-Type":"application/json"},body:JSON.stringify({model:input.model,prompt:input.prompt,size:input.size,quality:input.quality,response_format:s.responseFormat})}}
@@ -60,14 +62,18 @@ async function fetchModels(){
 async function loadHistory(){state.history=await invoke("get_history");renderHistory()}
 async function imageFor(item){return invoke("read_image",{path:item.path})}
 function showImage(data,item){state.current=item;$("#resultImage").src=data;$("#canvas").classList.add("has-image");$("#canvasActions").hidden=false;$("#download").href=data;$("#download").download=item.filename;$("#resultMeta").textContent=`${item.model} · ${item.size} · ${item.quality} · ${Number(item.elapsedSeconds||0).toFixed(1)} 秒`}
+function clearCanvas(){state.current=null;$("#resultImage").removeAttribute("src");$("#canvas").classList.remove("has-image");$("#canvasActions").hidden=true;$("#download").removeAttribute("href");$("#resultMeta").textContent="等待生成"}
+function clearUpload(kind){const source=kind==="source";state[kind]=null;const input=$(source?"#sourceInput":"#maskInput"),name=$(source?"#sourceName":"#maskName"),button=$(source?"#clearSource":"#clearMask");input.value="";name.textContent=source?"PNG、JPG、WEBP，最大 25MB":"透明 PNG，白色区域进行修改";button.hidden=true}
 function renderHistory(){
-  const filter=$("#historyFilter").value;const items=filter==="all"?state.history:state.history.filter(x=>x.mode===filter);$("#history").innerHTML=items.length?items.map(x=>`<article class="history-item" data-id="${x.id}"><img data-path="${escapeHtml(x.path)}" alt=""><div class="history-info"><strong>${escapeHtml(x.prompt)}</strong><div><span>${x.mode==="edit"?"图生图":"文生图"} · ${escapeHtml(x.model||"")}</span><span>${Number(x.elapsedSeconds||0).toFixed(0)}秒</span></div></div></article>`).join(''):'<div class="history-empty">暂无生成记录</div>';
-  $$('.history-item img').forEach(async img=>{try{img.src=await invoke("read_image",{path:img.dataset.path})}catch{}});$$('.history-item').forEach(card=>card.onclick=async()=>{const item=state.history.find(x=>x.id===card.dataset.id);showImage(await imageFor(item),item)})
+  const filter=$("#historyFilter").value;const items=filter==="all"?state.history:state.history.filter(x=>x.mode===filter);$("#history").innerHTML=items.length?items.map(x=>`<article class="history-item" data-id="${x.id}"><button class="delete-history" type="button" aria-label="删除这张历史图片">×</button><img data-path="${escapeHtml(x.path)}" alt="${escapeHtml(x.prompt)}"><div class="history-info"><strong>${escapeHtml(x.prompt)}</strong><div><span>${x.mode==="edit"?"图生图":"文生图"} · ${escapeHtml(x.model||"")}</span><span>${Number(x.elapsedSeconds||0).toFixed(0)}秒</span></div></div></article>`).join(''):'<div class="history-empty">暂无生成记录</div>';
+  $$('.history-item img').forEach(async img=>{try{img.src=await invoke("read_image",{path:img.dataset.path})}catch{}});$$('.history-item').forEach(card=>card.onclick=async e=>{if(e.target.closest('.delete-history'))return;const item=state.history.find(x=>x.id===card.dataset.id);showImage(await imageFor(item),item)});$$('.delete-history').forEach(button=>button.onclick=async e=>{e.stopPropagation();const card=button.closest('.history-item'),item=state.history.find(x=>x.id===card.dataset.id);if(!item||!confirm(`确定删除“${item.filename}”吗？\n图片文件也会一并删除。`))return;button.disabled=true;try{await invoke("delete_history_item",{id:item.id});if(state.current?.id===item.id)clearCanvas();await loadHistory()}catch(err){error(String(err));button.disabled=false}})
 }
 
 $$('.mode-tab').forEach(x=>x.onclick=()=>setMode(x.dataset.mode));
-$("#sourceInput").onchange=async e=>{const file=e.target.files[0];if(!file)return;try{state.source=await fileData(file);$("#sourceName").textContent=file.name}catch(err){error(String(err))}};
-$("#maskInput").onchange=async e=>{const file=e.target.files[0];if(!file)return;try{state.mask=await fileData(file);$("#maskName").textContent=file.name}catch(err){error(String(err))}};
+$("#sourceInput").onchange=async e=>{const file=e.target.files[0];if(!file)return;try{state.source=await fileData(file);$("#sourceName").textContent=file.name;$("#clearSource").hidden=false}catch(err){error(String(err))}};
+$("#maskInput").onchange=async e=>{const file=e.target.files[0];if(!file)return;try{state.mask=await fileData(file);$("#maskName").textContent=file.name;$("#clearMask").hidden=false}catch(err){error(String(err))}};
+$("#clearSource").onclick=e=>{e.preventDefault();e.stopPropagation();clearUpload("source")};
+$("#clearMask").onclick=e=>{e.preventDefault();e.stopPropagation();clearUpload("mask")};
 $("#modelSelect").onchange=async e=>{await invoke("save_selected_model",{model:e.target.value});$("#settingsModel").value=e.target.value;await refreshStatus()};
 $("#settingsModel").onchange=e=>$("#modelSelect").value=e.target.value;
 $("#refreshModels").onclick=()=>{$("#settingsDialog").showModal();fetchModels()};
@@ -78,9 +84,11 @@ $("#generate").onclick=async()=>{
   const button=$("#generate");button.disabled=true;button.querySelector('span').textContent="正在生成…";button.querySelector('small').textContent="模型处理中，请保持软件开启";error();const input={prompt,model,size:$("#size").value,quality:$("#quality").value,filename:$("#filename").value.trim()||"created-image.png"};if(state.mode==="edit")Object.assign(input,{imageData:state.source.data,imageName:state.source.name,maskData:state.mask?.data||null,maskName:state.mask?.name||null});
   try{const item=await invoke(state.mode==="edit"?"edit_image":"generate_image",{input});showImage(await imageFor(item),item);await loadHistory()}catch(e){error(String(e))}finally{button.disabled=false;button.querySelector('span').textContent=state.mode==="edit"?"生成修改图片":"生成图片";button.querySelector('small').textContent=(state.settings?.responseFormat||"url")==="url"?"URL 返回 · 速度优先":"Base64 返回 · 兼容优先"}
 };
-$("#reuse").onclick=async()=>{if(!state.current)return;state.source={name:state.current.filename,data:await imageFor(state.current)};$("#sourceName").textContent=state.current.filename;setMode("edit")};
+$("#reuse").onclick=async()=>{if(!state.current)return;state.source={name:state.current.filename,data:await imageFor(state.current)};$("#sourceName").textContent=state.current.filename;$("#clearSource").hidden=false;setMode("edit")};
+$("#closeCanvas").onclick=clearCanvas;
 $("#resultImage").onclick=()=>{if(!state.current)return;$("#previewImage").src=$("#resultImage").src;$("#previewCaption").textContent=`${state.current.filename} · ${state.current.model} · ${Number(state.current.elapsedSeconds||0).toFixed(1)} 秒`;$("#previewDialog").showModal()};
-$("#openSettings").onclick=()=>{$("#apiKey").value="";$("#fetchStatus").textContent="图片模型会排在列表前面";$("#settingsDialog").showModal()};
+function openSettings(){const dialog=$("#settingsDialog");$("#apiKey").value="";$("#fetchStatus").textContent="图片模型会排在列表前面";if(!dialog.open)dialog.showModal()}
+$("#openSettings").addEventListener("click",openSettings);
 $("#closeSettings").onclick=$("#cancelSettings").onclick=()=>$("#settingsDialog").close();
 $("#closePreview").onclick=()=>$("#previewDialog").close();
 $("#settingsForm").onsubmit=async e=>{e.preventDefault();const button=$("#saveSettings");button.disabled=true;button.textContent="正在保存…";try{await invoke("save_settings",{apiKey:$("#apiKey").value,baseUrl:$("#baseUrl").value,selectedModel:$("#settingsModel").value,responseFormat:$("#responseFormat").value,outputDir:$("#outputDir").value});$("#apiKey").value="";$("#settingsDialog").close();await refreshStatus()}catch(err){$("#fetchStatus").textContent=String(err)}finally{button.disabled=false;button.textContent="保存设置"}};

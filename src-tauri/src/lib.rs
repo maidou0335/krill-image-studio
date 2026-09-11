@@ -137,5 +137,15 @@ async fn edit_image(input:EditInput)->Result<HistoryItem,String>{
 async fn get_history()->Vec<HistoryItem>{fs::read_to_string(history_path().unwrap()).await.ok().and_then(|s|serde_json::from_str(&s).ok()).unwrap_or_default()}
 #[tauri::command]
 async fn read_image(path:String)->Result<String,String>{let bytes=fs::read(&path).await.map_err(|e|format!("读取图片失败：{}",e))?;let mime=match Path::new(&path).extension().and_then(|s|s.to_str()).unwrap_or("").to_ascii_lowercase().as_str(){"jpg"|"jpeg"=>"image/jpeg","webp"=>"image/webp",_=>"image/png"};Ok(format!("data:{};base64,{}",mime,STANDARD.encode(bytes)))}
+#[tauri::command]
+async fn delete_history_item(id:String)->Result<(),String>{
+    let mut history=get_history().await;
+    let item=history.iter().find(|item|item.id==id).cloned().ok_or("没有找到这条历史记录")?;
+    history.retain(|entry|entry.id!=id);
+    fs::create_dir_all(app_dir()?).await.map_err(|e|e.to_string())?;
+    fs::write(history_path()?,serde_json::to_vec_pretty(&history).map_err(|e|e.to_string())?).await.map_err(|e|e.to_string())?;
+    if Path::new(&item.path).exists(){fs::remove_file(&item.path).await.map_err(|e|format!("历史记录已删除，但图片文件删除失败：{}",e))?}
+    Ok(())
+}
 
-pub fn run(){tauri::Builder::default().invoke_handler(tauri::generate_handler![get_status,save_settings,fetch_models,save_selected_model,generate_image,edit_image,get_history,read_image]).run(tauri::generate_context!()).expect("启动 Krill Image Studio 失败")}
+pub fn run(){tauri::Builder::default().invoke_handler(tauri::generate_handler![get_status,save_settings,fetch_models,save_selected_model,generate_image,edit_image,get_history,read_image,delete_history_item]).run(tauri::generate_context!()).expect("启动 Krill Image Studio 失败")}
