@@ -12,14 +12,16 @@
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./mobile.css">
+  <link rel="stylesheet" href="./brand-theme.css">
 </head>
 <body>
   <header class="topbar">
-    <div class="brand"><img src="./icon.png" alt=""><div><strong>Krill Image Studio</strong><span>多供应商 AI 图片工作台</span></div></div>
-    <div class="top-actions"><span id="connection" class="connection"><i></i><b>尚未配置</b></span><button id="openSettings" class="button secondary" type="button">设置</button></div>
+    <div class="brand"><img src="./icon.png" alt="Krill Image Studio"><div><strong>Krill Image Studio</strong><span>把灵感，画出来</span></div></div>
+    <div class="top-actions"><span id="connection" class="connection"><i></i><b>尚未配置</b></span><button id="openSettings" class="button secondary" type="button" aria-label="打开供应商设置">设置</button></div>
   </header>
   <main class="app-shell">
     <aside class="creator-panel">
+      <div class="panel-intro"><span>CREATE</span><strong>今天想画点什么？</strong><p>选择创作方式，把脑海里的画面交给 AI。</p></div>
       <div class="mode-tabs"><button class="mode-tab active" data-mode="generate">文生图</button><button class="mode-tab" data-mode="edit">图生图</button></div>
       <section id="editInputs" class="edit-inputs" hidden>
         <label class="upload-box"><input id="sourceInput" type="file" accept="image/png,image/jpeg,image/webp"><b>上传原图</b><span id="sourceName">PNG、JPG、WEBP，最大 25MB</span></label>
@@ -37,7 +39,7 @@
     </aside>
     <section class="canvas-panel">
       <div class="canvas-head"><div><strong>创作画布</strong><span id="resultMeta">等待生成</span></div><div id="canvasActions" class="canvas-actions" hidden><button id="reuse" class="button secondary">用作图生图</button><a id="download" class="button secondary" download>下载</a></div></div>
-      <div id="canvas" class="canvas"><div class="empty-state"><span>IMAGE</span><strong>你的图片会显示在这里</strong><p>生成结果将自动保存到本机</p></div><img id="resultImage" alt="生成结果"></div>
+      <div id="canvas" class="canvas"><div class="empty-state"><img src="./icon.png" alt=""><span>READY TO CREATE</span><strong>灵感画布准备好了</strong><p>输入描述，第一张作品会从这里出现</p></div><img id="resultImage" alt="生成结果"></div>
     </section>
     <aside class="history-panel">
       <div class="history-head"><div><strong>本地历史</strong><span>最近 100 张</span></div><select id="historyFilter"><option value="all">全部</option><option value="generate">文生图</option><option value="edit">图生图</option></select></div>
