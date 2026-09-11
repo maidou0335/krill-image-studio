@@ -1,0 +1,14 @@
+{
+  "name": "Krill Image Studio",
+  "short_name": "Krill Image",
+  "description": "支持自定义 OpenAI 兼容接口的 AI 图片工作台",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f5f2",
+  "theme_color": "#0d513c",
+  "icons": [
+    {"src":"./icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"./icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ]
+}

@@ -1,0 +1,12 @@
+@media(max-width:700px){
+ body{min-width:0;min-height:100dvh;padding-bottom:env(safe-area-inset-bottom)}
+ .topbar{height:auto;min-height:64px;padding:10px 13px;padding-top:max(10px,env(safe-area-inset-top));gap:8px}
+ .brand{gap:8px}.brand img{width:34px;height:34px}.brand strong{font-size:14px}.brand span{display:none}
+ .top-actions{gap:6px}.connection{max-width:145px;padding:7px 9px}.connection b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.top-actions .button{padding:8px 10px}
+ .app-shell{height:auto;display:flex;flex-direction:column}.creator-panel,.canvas-panel,.history-panel{border:0;padding:14px;overflow:visible}
+ .creator-panel{order:1}.canvas-panel{order:2;min-height:430px}.history-panel{display:block;order:3;border-top:1px solid var(--line)}
+ .prompt-field textarea{height:125px}.canvas-head{height:auto;min-height:44px;gap:8px}.canvas-actions{gap:5px}.canvas-actions .button{padding:8px 9px;font-size:12px}
+ .canvas{min-height:330px;max-height:70dvh}.history-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.history-info div{gap:5px}.history-info div span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ #settingsDialog{width:calc(100vw - 18px);max-height:92dvh}.preview-dialog{width:100vw;height:100dvh;max-width:none;max-height:none;border-radius:0;padding-left:8px;padding-right:8px}
+ .two-fields{align-items:flex-start}.edit-inputs{grid-template-columns:1fr}.upload-box{min-height:78px}
+}

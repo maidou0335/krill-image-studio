@@ -1,5 +1,9 @@
 # Krill Image Studio
 
+## iPhone / iPad PWA
+
+项目包含可安装的移动网页版。GitHub Pages 部署完成后，用 Safari 打开站点，点击“分享”→“添加到主屏幕”即可。网页版的 API Key 和历史记录只保存在当前浏览器；供应商接口需要允许浏览器跨域访问（CORS）。
+
 Local AI image creation app built with Tauri 2. The same source supports Windows and macOS.
 
 ## Local development

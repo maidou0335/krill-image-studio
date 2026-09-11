@@ -2,13 +2,20 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0d513c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Krill Image">
   <title>Krill Image Studio</title>
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./mobile.css">
 </head>
 <body>
   <header class="topbar">
-    <div class="brand"><img src="/icon.png" alt=""><div><strong>Krill Image Studio</strong><span>多供应商 AI 图片工作台</span></div></div>
+    <div class="brand"><img src="./icon.png" alt=""><div><strong>Krill Image Studio</strong><span>多供应商 AI 图片工作台</span></div></div>
     <div class="top-actions"><span id="connection" class="connection"><i></i><b>尚未配置</b></span><button id="openSettings" class="button secondary" type="button">设置</button></div>
   </header>
   <main class="app-shell">
@@ -46,11 +53,11 @@
       <label class="field"><span>默认图片模型</span><select id="settingsModel"><option value="">尚未获取模型</option></select></label>
       <label class="field"><span>图片返回方式</span><select id="responseFormat"><option value="url">URL，速度优先</option><option value="b64_json">Base64，兼容优先</option></select><small>URL 模式可显著减少大体积 JSON 的传输时间</small></label>
       <label class="field"><span>图片保存目录</span><input id="outputDir" placeholder="例如 C:\Users\EDY\Pictures\Krill Image Studio"></label>
-      <p class="privacy">Key 保存在 Windows 凭据管理器；设置、模型列表、历史记录与图片均保存在电脑本地。</p>
+      <p id="privacyNote" class="privacy">Key 保存在系统安全凭据中；设置、模型列表、历史记录与图片均保存在本机。</p>
       <footer><button id="cancelSettings" class="button secondary" type="button">取消</button><button id="saveSettings" class="button primary" type="submit">保存设置</button></footer>
     </form>
   </dialog>
   <dialog id="previewDialog" class="preview-dialog"><button id="closePreview" class="dialog-close" type="button">×</button><img id="previewImage" alt="图片大图"><div id="previewCaption"></div></dialog>
-  <script src="/app.js" defer></script>
+  <script src="./app.js" defer></script>
 </body>
 </html>
